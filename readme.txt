@@ -1,4 +1,4 @@
-=== Content Hiding ===
+=== 隐藏内容 ===
 Contributors: wyzda2021
 Donate link: https://www.ggdoc.cn
 Tags: 隐藏内容, 关注可见, 微信引流, 输入密码, 扫码, 微信, 关注, 回复, 关键字, 百家号

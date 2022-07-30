@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:Content Hiding
+ * Plugin Name:隐藏内容
  * Plugin URI:https://www.ggdoc.cn/plugin/4.html
  * Description:支持隐藏文章内容的一部分，用户需要关注微信公众号或百家号才可以查看。
  * Version:0.0.1
