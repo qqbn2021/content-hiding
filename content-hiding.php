@@ -3,7 +3,7 @@
  * Plugin Name:隐藏内容
  * Plugin URI:https://www.ggdoc.cn/plugin/4.html
  * Description:支持隐藏文章内容的一部分，用户需要关注微信公众号或百家号才可以查看。
- * Version:0.0.1
+ * Version:0.0.2
  * Requires at least: 5.0
  * Requires PHP:5.3
  * Author:果果开发
@@ -63,3 +63,6 @@ add_action('wp_enqueue_scripts', array('Content_Hiding_Plugin', 'wp_enqueue_scri
 // ajax处理
 add_action('wp_ajax_check_password', array('Content_Hiding_Plugin', 'check_password'));
 add_action('wp_ajax_nopriv_check_password', array('Content_Hiding_Plugin', 'check_password'));
+// 动态显示隐藏的内容
+add_action('wp_ajax_show_content', array('Content_Hiding_Plugin', 'show_content'));
+add_action('wp_ajax_nopriv_show_content', array('Content_Hiding_Plugin', 'show_content'));

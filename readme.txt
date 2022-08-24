@@ -5,7 +5,7 @@ Tags: 隐藏内容, 关注可见, 微信引流, 输入密码, 扫码, 微信, �
 Requires at least: 5.0
 Requires PHP: 5.3
 Tested up to: 6.0
-Stable tag: 0.0.1
+Stable tag: 0.0.2
 License: GNU General Public License v2.0 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,10 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 1、支持多个自媒体平台（不仅仅是微信公众号，百家号也是可以使用的），只要平台支持关键词回复，就可以使用。
 
 2、支持设置二维码图片、自定义关键词、验证码、验证码有效期等。
+
+3、使用js加载技术，静态缓存网站也可以使用。
+
+4、支持登录、回复可见。（商业版）
 
 使用方法：
 
@@ -78,10 +82,16 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Upgrade Notice ==
 
+= 0.0.2 =
+* 解决了js加载控制台报错问题
+
 = 0.0.1 =
 参考Changelog说明
 
 == Changelog ==
+
+= 0.0.2 =
+* 改用js加载，静态缓存网站也可以使用
 
 = 0.0.1 =
 * 新增隐藏内容简码

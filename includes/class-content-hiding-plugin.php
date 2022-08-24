@@ -339,7 +339,7 @@ class Content_Hiding_Plugin
      */
     public static function init()
     {
-        wp_register_style('content-hiding-css', plugin_dir_url(CONTENT_HIDING_PLUGIN_FILE) . 'css/content-hiding.min.css', false, '0.0.1');
+        wp_register_style('content-hiding-css', plugin_dir_url(CONTENT_HIDING_PLUGIN_FILE) . 'css/content-hiding.min.css', false, '0.0.2');
         wp_enqueue_style('content-hiding-css');
     }
 
@@ -350,13 +350,12 @@ class Content_Hiding_Plugin
     public static function wp_enqueue_scripts()
     {
         global $content_hiding_options;
-        wp_enqueue_script('content-hiding-js', plugins_url('/js/content-hiding.min.js', CONTENT_HIDING_PLUGIN_FILE), array(), '0.0.1', true);
+        wp_enqueue_script('content-hiding-js', plugins_url('/js/content-hiding.min.js', CONTENT_HIDING_PLUGIN_FILE), array(), '0.0.2', true);
         wp_localize_script(
             'content-hiding-js',
             'content_hiding_js_obj',
             array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('content_hiding_js'),
                 'wechat_text' => !empty($content_hiding_options['wechat_text']) ? $content_hiding_options['wechat_text'] : ''
             )
         );
@@ -369,7 +368,6 @@ class Content_Hiding_Plugin
     public static function check_password()
     {
         global $content_hiding_options;
-        check_ajax_referer('content_hiding_js', 'code');
         $password = !empty($_POST['password']) ? $_POST['password'] : '';
         $wechat_text = !empty($content_hiding_options['wechat_text']) ? $content_hiding_options['wechat_text'] : '';
         if (empty($password) || !is_string($password)) {
@@ -407,6 +405,17 @@ class Content_Hiding_Plugin
      */
     public static function hide($atts, $content = '')
     {
+        $content_key = md5($content);
+        set_transient('content_hiding_' . $content_key, $content);
+        return '<script src="' . esc_url(admin_url('admin-ajax.php')) . '?action=show_content&content_key=' . $content_key . '"></script>';
+    }
+
+    /**
+     * 显示简码解析后的内容
+     * @return void
+     */
+    public static function show_content()
+    {
         global $content_hiding_options;
         $verify = false;
         // 微信关注
@@ -420,45 +429,54 @@ class Content_Hiding_Plugin
             }
         }
         if ($verify) {
-            return '<p>' . $content . '</p>';
+            $content = '';
+            if (!empty($_GET['content_key'])) {
+                $content_key = sanitize_key($_GET['content_key']);
+                $content = get_transient('content_hiding_' . $content_key);
+            }
+            $html = '<p>' . $content . '</p>';
+        } else {
+            // 开始拼接返回代码
+            $html = '<div class="content-hiding-box">';
+            $wechat_qrcode = '';
+            if (!empty($content_hiding_options['wechat_qrcode'])) {
+                $wechat_qrcode = $content_hiding_options['wechat_qrcode'];
+            }
+            $account = '';
+            if (!empty($content_hiding_options['account'])) {
+                $account = $content_hiding_options['account'];
+            }
+            $wechat_name = '';
+            if (!empty($content_hiding_options['wechat_name'])) {
+                $wechat_name = $content_hiding_options['wechat_name'];
+            }
+            $wechat_text = '';
+            if (!empty($content_hiding_options['wechat_text'])) {
+                $wechat_text = $content_hiding_options['wechat_text'];
+            }
+            $html .= '<div class="content-hiding-wechat-box">';
+            $html .= '<div class="content-hiding-wechat-qrcode">';
+            $html .= sprintf('<img src="%s" alt="%s" />', esc_url($wechat_qrcode), esc_attr($wechat_text));
+            $html .= '</div>';
+            $html .= '<div class="content-hiding-wechat-box-content">';
+            $html .= '<div class="content-hiding-wechat-box-content-item content-hiding-wechat-box-content-item-title">';
+            $html .= sprintf('内容已被隐藏，请输入%s查看', esc_attr($wechat_text));
+            $html .= '</div>';
+            $html .= '<div class="content-hiding-wechat-box-content-item">';
+            $html .= sprintf('<input class="content-hiding-password" type="text" id="content-hiding-password" placeholder="请输入%s" required="required">', esc_attr($wechat_text));
+            $html .= '<input class="content-hiding-submit" type="button" id="content-hiding-submit" value="验证">';
+            $html .= '<label class="content-hiding-error" id="content-hiding-error">验证失败</label>';
+            $html .= '</div>';
+            $html .= '<div class="content-hiding-wechat-box-content-item">';
+            $html .= sprintf('关注%s（<span>%s</span>），发送<span>%s</span>获取', esc_attr($account), esc_attr($wechat_name), esc_attr($wechat_text));
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
         }
-        // 开始拼接返回代码
-        $wechat_qrcode = '';
-        if (!empty($content_hiding_options['wechat_qrcode'])) {
-            $wechat_qrcode = $content_hiding_options['wechat_qrcode'];
-        }
-        $account = '';
-        if (!empty($content_hiding_options['account'])) {
-            $account = $content_hiding_options['account'];
-        }
-        $wechat_name = '';
-        if (!empty($content_hiding_options['wechat_name'])) {
-            $wechat_name = $content_hiding_options['wechat_name'];
-        }
-        $wechat_text = '';
-        if (!empty($content_hiding_options['wechat_text'])) {
-            $wechat_text = $content_hiding_options['wechat_text'];
-        }
-        $html = '<div class="content-hiding-box">';
-        $html .= '<div class="content-hiding-wechat-box">';
-        $html .= '<div class="content-hiding-wechat-qrcode">';
-        $html .= sprintf('<img src="%s" alt="%s" />', esc_url($wechat_qrcode), esc_attr($wechat_text));
-        $html .= '</div>';
-        $html .= '<div class="content-hiding-wechat-box-content">';
-        $html .= '<div class="content-hiding-wechat-box-content-item content-hiding-wechat-box-content-item-title">';
-        $html .= sprintf('内容已被隐藏，请输入%s查看', esc_attr($wechat_text));
-        $html .= '</div>';
-        $html .= '<div class="content-hiding-wechat-box-content-item">';
-        $html .= sprintf('<input class="content-hiding-password" type="text" id="content-hiding-password" placeholder="请输入%s" required="required">',esc_attr($wechat_text));
-        $html .= '<input class="content-hiding-submit" type="button" id="content-hiding-submit" value="验证">';
-        $html .= '<label class="content-hiding-error" id="content-hiding-error">验证失败</label>';
-        $html .= '</div>';
-        $html .= '<div class="content-hiding-wechat-box-content-item">';
-        $html .= sprintf('关注%s（<span>%s</span>），发送<span>%s</span>获取',esc_attr($account), esc_attr($wechat_name), esc_attr($wechat_text));
-        $html .= '</div>';
-        $html .= '</div>';
-        $html .= '</div>';
-        $html .= '</div>';
-        return $html;
+        @header('Content-Type: application/javascript');
+        $html = str_replace('`', '\`', $html);
+        echo 'document.write(`' . $html . '`);';
+        exit();
     }
 }
